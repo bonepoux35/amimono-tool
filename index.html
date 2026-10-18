@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧶編み物計算</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fbf8f3;color:#4c443d;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif;line-height:1.75}
+.wrap{max-width:700px;margin:auto;padding:20px 16px 45px}
+h1{text-align:center;font-size:25px;margin:5px 0 8px}
+.sub{text-align:right;color:#8b7d72;font-size:14px;margin-bottom:18px;padding-right:8px}
+.card{background:#fff;border:1px solid #eadfd5;border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #00000008}
+.gauge{background:#f7eee9;border:2px solid #dfb8ad}
+.title{font-size:20px;font-weight:800;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:14px;font-weight:700;display:block}
+input{width:100%;font-size:18px;padding:12px;border:1px solid #d8ccc2;border-radius:10px;margin-top:5px;background:#fff;color:#4c443d}
+button{width:100%;padding:14px;border:0;border-radius:12px;background:#c98f87;color:#fff;font-size:17px;font-weight:800;margin-top:15px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+.tab{margin:0;padding:11px 6px;background:#eee5df;color:#655950;font-size:14px}
+.tab.active{background:#c98f87;color:#fff}
+.tool{display:none} .tool.active{display:block}
+.result-title{font-size:21px;font-weight:800}
+.pattern{background:#faf5f1;border-radius:13px;padding:15px;margin-top:12px}
+.pattern b{font-size:18px}
+.headline{font-size:21px;font-weight:800}
+.repeat{font-size:19px;font-weight:800;margin-top:10px}
+.small{font-size:13px;color:#766b61}.warning{color:#d33;font-weight:800;font-size:17px}
+.result b,.pattern b{font-weight:400}
+#zr .headline,#zr .repeat,#zr b,#zr .small{font-size:inherit;font-weight:400}
+.slope-numbers{font-size:18px;font-weight:800;letter-spacing:.18em;white-space:nowrap;overflow-x:auto;text-align:left;line-height:1.5;padding:8px 2px}
+.brand{text-align:center;color:#8b7d72;letter-spacing:1px;margin-top:28px}
+@media(max-width:520px){
+ .grid{grid-template-columns:1fr}
+ .tabs{grid-template-columns:1fr}
+}
+#slopeResult .pattern{font-size:18px;font-weight:800;line-height:1.7}
+#slopeResult .pattern *{font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🧶編み物計算ツール🧶</h1>
+<div class="sub">bon epoux</div>
+
+<div class="tabs">
+ <button class="tab active" onclick="showTool('gaugeTool',this)">目数・段数</button>
+ <button class="tab" onclick="showTool('zougenTool',this)">増し目・減らし目</button>
+ <button class="tab" onclick="showTool('slopeTool',this)">斜線</button>
+ <button class="tab" onclick="showTool('neckTool',this)">襟ぐり</button>
+</div>
+
+<section id="gaugeTool" class="tool active">
+ <div class="card gauge">
+  <div class="title">🧶 ゲージ</div>
+  <div class="grid">
+   <div><label>10cmの目数<input id="gs" type="number" min="1" step="0.1" value="20"></label></div>
+   <div><label>10cmの段数<input id="gr" type="number" min="1" step="0.1" value="26"></label></div>
+  </div>
+ </div>
+ <div class="card">
+  <div class="title">目数・段数の計算</div>
+  <div class="grid">
+   <div><label>幅（cm）<input id="gw" type="number" min="0" step="0.1" value="50"></label></div>
+   <div><label>長さ（cm）<input id="gh" type="number" min="0" step="0.1" value="50"></label></div>
+  </div>
+  <button onclick="gaugeCalc()">計算する</button>
+ </div>
+ <div id="gaugeResult" class="card"></div>
+</section>
+
+<section id="zougenTool" class="tool">
+ <div class="card">
+  <div class="title">増し目・減らし目の計算</div>
+  <label>今の目数<input id="za" type="number" value="100"></label>
+  <label>仕上げたい目数<input id="zb" type="number" value="80"></label>
+  <label>左右の端に残す目数（片側）<input id="ze" type="number" value="2"></label>
+  <button onclick="zougenCalc()">計算する</button>
+ </div>
+ <div class="card" id="zr"></div>
+</section>
+
+
+<section id="slopeTool" class="tool">
+ <div class="card">
+  <div class="title">斜線の計算</div>
+  <div class="grid">
+   <div><label>段数<input id="slRows" type="number" min="1" step="1" value="18"></label></div>
+   <div><label>目数<input id="slStitches" type="number" min="1" step="1" value="28"></label></div>
+  </div>
+  <div style="margin-top:12px">
+   <label>用途</label>
+   <label style="display:inline-block;margin-right:18px;font-weight:400">
+    <input type="radio" name="slPurpose" value="shoulder" checked style="width:auto;margin-right:5px">肩下がり
+   </label>
+   <label style="display:inline-block;font-weight:400">
+    <input type="radio" name="slPurpose" value="sleeve" style="width:auto;margin-right:5px">袖下・Vネック
+   </label>
+  </div>
+  <button onclick="slopeCalc()">計算する</button>
+ </div>
+ <div id="slopeResult" class="card"></div>
+</section>
+
+<section id="neckTool" class="tool">
+ <div class="card">
+  <div class="title">襟ぐりの計算</div>
+  <div class="grid">
+   <div><label>襟ぐりの幅（目）<input id="nw" type="number" min="1" step="1" value="40"></label></div>
+   <div><label>前身頃の深さ（段）<input id="fd" type="number" min="1" step="1" value="28"></label></div>
+   <div><label>後ろ身頃の深さ（段）<input id="bd" type="number" min="1" step="1" value="8"></label></div>
+  </div>
+  <button onclick="neckCalc()">計算する</button>
+ </div>
+ <div id="front" class="card"></div>
+ <div id="back" class="card"></div>
+</section>
+
+<div class="brand">bon epoux</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const r=x=>Math.max(1,Math.round(x));
+
+function showTool(id,btn){
+ document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ $(id).classList.add('active'); btn.classList.add('active');
+}
+
+function gaugeCalc(){
+ const gs=+$('gs').value, gr=+$('gr').value, w=+$('gw').value, h=+$('gh').value;
+ if([gs,gr,w,h].some(x=>!isFinite(x)||x<0)||gs<=0||gr<=0){
+  $('gaugeResult').innerHTML='<b>数字を正しく入力してください。</b>'; return;
+ }
+ const stitches=Math.round(w*gs/10);
+ const rows=Math.round(h*gr/10);
+ $('gaugeResult').innerHTML=`<div class="pattern" style="border:2px solid #dfb8ad;background:#fff7f4">
+ <div class="small">${w}cm</div>
+ <div style="font-size:25px;font-weight:800;margin-bottom:12px">${stitches}目</div>
+ <div class="small">${h}cm</div>
+ <div style="font-size:25px;font-weight:800">${rows}段</div>
+ </div>`;
+}
+
+function gcd(a,b){while(b){let t=a%b;a=b;b=t}return a}
+function zougenCalc(){
+ let a=+document.getElementById("za").value,b=+document.getElementById("zb").value,e=+document.getElementById("ze").value,r=document.getElementById("zr");
+ if(!Number.isInteger(a)||!Number.isInteger(b)||!Number.isInteger(e)||a<1||b<1||e<0){r.innerHTML="整数で入力してください。";return}
+ if(a===b){r.innerHTML='<div class="headline">増し目・減らし目は必要ありません。</div>';return}
+ let n=Math.abs(b-a), inc=b>a, usable=a-2*e;
+ if(usable<=0){r.innerHTML="端に残す目数が多すぎます。";return}
+
+ /* 増し目は、両端を除いた元の目数を超える回数は配置できない */
+ if(inc && n>usable){
+  r.innerHTML='<div class="warning">この目数では計算できません。<br>もう一度入力してください。</div>';
+  return
+ }
+ if(!inc && n>=usable/2){
+  r.innerHTML='<div class="warning">減らす目数が多すぎます。<br>もう一度入力してください。</div>';
+  return
+ }
+
+ /* 操作をできるだけ均等に配置 */
+ let base=Math.floor(usable/n), rem=usable%n;
+ let low=base-1, high=base;
+ let highCount=rem, lowCount=n-rem;
+ function phrase(x){return (x>0?x+"目編んで1目":"1目")+(inc?"増やす":"減らす")}
+ function times(k){return '<span style="font-weight:800">×'+k+'回</span>'}
+ let pat="";
+ if(highCount===0 || lowCount===0){
+  const x=highCount===0?low:high;
+  pat=phrase(x)+(n>1?" "+times(n):"");
+ }else{
+  let major,majorCount,minor,minorCount;
+  if(lowCount>=highCount){major=low;majorCount=lowCount;minor=high;minorCount=highCount}
+  else{major=high;majorCount=highCount;minor=low;minorCount=lowCount}
+
+  // 少ない方が1回だけなら、繰り返しのまとまりではないので◎は使わない。
+  if(minorCount===1){
+   let lines=[];
+   let first=phrase(major);
+   if(majorCount>1) first+=" "+times(majorCount);
+   lines.push(first,phrase(minor));
+   pat=lines.join("<br>");
+  }else{
+   const per=Math.floor(majorCount/minorCount), rest=majorCount%minorCount;
+   let lines=[];
+   let first="◎"+phrase(major);
+   if(per>1) first+=" "+times(per);
+   lines.push(first,phrase(minor),"◎"+times(minorCount));
+   if(rest>0){let tail=phrase(major);if(rest>1)tail+=" "+times(rest);lines.push(tail)}
+   pat=lines.join("<br>");
+  }
+ }
+
+  let edgeText=e?`<div class="small" style="margin-top:10px">※両端は${e}目編む</div>`:"";
+ r.innerHTML=`<div class="pattern" style="font-weight:800">${pat}</div>${edgeText}`;
+}
+
+function slopeCalc(){
+ const stitches=+$('slStitches').value, rows=+$('slRows').value;
+ const out=$('slopeResult');
+ if(!Number.isInteger(stitches)||!Number.isInteger(rows)||stitches<1||rows<1){
+  out.innerHTML='<b>整数で入力してください。</b>'; return;
+ }
+ const purpose=document.querySelector('input[name="slPurpose"]:checked').value;
+
+ if(purpose==="shoulder"){
+  if(rows%2!==0){
+   out.innerHTML='<div class="warning" style="font-size:13px">肩下がりは2段ごとに計算します。<br>段数は偶数で入力してください。</div>'; return;
+  }
+  const times=rows/2;
+  if(times>stitches){
+   out.innerHTML='<div class="warning" style="font-size:13px">この段数では、1回に1目以上振り分けられません。<br>もう一度入力してください。</div>'; return;
+  }
+  const base=Math.floor(stitches/times), rem=stitches%times;
+  let parts=[];
+  if(rem>0) parts.push(`　2段ごとに ${base+1}目減らす${rem>1?` ×${rem}回`:''}`);
+  const rest=times-rem;
+  if(rest>0) parts.push(`　2段ごとに ${base}目減らす${rest>1?` ×${rest}回`:''}`);
+  out.innerHTML=`<div class="pattern slope-numbers" style="white-space:normal">${parts.join('<br>')}</div>`;
+  return;
+ }
+
+ // 袖下・Vネック：減らす回数＋最後の平編み1区間。
+ // 各区間は2・4・6…の偶数段だけで、できるだけ均等にする。
+ const sections=stitches+1;
+ const minRows=sections*2;
+ if(rows%2!==0){
+  out.innerHTML='<div class="warning" style="font-size:13px">袖下・Vネックは偶数段で計算します。<br>段数は偶数で入力してください。</div>'; return;
+ }
+ if(rows<minRows){
+  out.innerHTML=`<div class="warning" style="font-size:13px">この段数では計算できません。<br>段数を${minRows}段以上にしてください。</div>`; return;
+ }
+ const avg=rows/sections;
+ let low=Math.floor(avg/2)*2;
+ if(low<2) low=2;
+ let high=low;
+ if(rows!==low*sections) high=low+2;
+ const highCount=high===low?0:(rows-low*sections)/(high-low);
+ if(!Number.isInteger(highCount)||highCount<0||highCount>sections){
+  out.innerHTML='<div class="warning" style="font-size:13px">この組み合わせでは偶数段に均等配分できません。<br>もう一度入力してください。</div>'; return;
+ }
+
+ // 袖下・Vネックは、同じ目数・段数を2通りの並べ方で表示する。
+ // ①まとめる ②均等に散らす
+ function makeVals(mode){
+  if(highCount===0) return Array(sections).fill(low);
+  let a=Array(sections).fill(low);
+  if(mode==="group"){
+   // 大きい間隔を前にまとめる。
+   for(let i=0;i<highCount;i++) a[i]=high;
+  }else{
+   // 全体にできるだけ均等に散らす。
+   for(let i=0;i<sections;i++){
+    const before=Math.floor((i*highCount + sections-1)/sections);
+    const after=Math.floor(((i+1)*highCount + sections-1)/sections);
+    a[i]=after>before?high:low;
+   }
+  }
+  return a;
+ }
+
+ // 共通表示ルール：同じ1行は×○回、複数行の繰り返しは◎～◎×○回。
+ function formatPattern(vals){
+  const dec=vals.slice(0,-1), flat=vals[vals.length-1];
+  function bestRepeat(a){
+   let best=null;
+   for(let len=1;len<=Math.floor(a.length/2);len++){
+    const block=a.slice(0,len); let reps=1;
+    while((reps+1)*len<=a.length){
+     let ok=true;
+     for(let j=0;j<len;j++) if(a[reps*len+j]!==block[j]){ok=false;break;}
+     if(!ok) break; reps++;
+    }
+    if(reps>=2){
+     const covered=reps*len;
+     if(!best || covered>best.covered || (covered===best.covered && len<best.len)) best={len,reps,covered,block};
+    }
+   }
+   return best;
+  }
+  // 同じ内容が連続する部分は、どこにあっても必ず×○回にまとめる。
+  function appendRuns(a){
+   for(let i=0;i<a.length;){
+    let j=i+1; while(j<a.length&&a[j]===a[i])j++;
+    lines.push(`　${a[i]}段ごとに1目減らす${j-i>1?`×${j-i}回`:''}`);
+    i=j;
+   }
+  }
+
+  const rep=bestRepeat(dec); let lines=[];
+  if(rep){
+   if(rep.len===1){
+    lines.push(`　${rep.block[0]}段ごとに1目減らす×${rep.reps}回`);
+   }else{
+    rep.block.forEach((v,i)=>lines.push(`${i===0?'　◎':'　　'}${v}段ごとに1目減らす`));
+    lines.push(`　◎×${rep.reps}回`);
+   }
+   // 繰り返し後に残った部分も、同じ行が続けば×○回にまとめる。
+   appendRuns(dec.slice(rep.covered));
+  }else{
+   appendRuns(dec);
+  }
+  lines.push(`　${flat}段平`);
+  return lines.join('<br>');
+ }
+
+ const patterns=[
+  ['まとめる',makeVals('group')],
+  ['均等に散らす',makeVals('even')]
+ ];
+ out.innerHTML=patterns.map(([title,v])=>
+  `<div class="pattern" style="margin-bottom:12px"><div style="font-size:15px;font-weight:800;margin-bottom:7px">${title}</div><div class="slope-numbers" style="white-space:normal;font-size:16px;font-weight:800;letter-spacing:0;line-height:1.65">${formatPattern(v)}</div></div>`
+ ).join('');
+}
+
+function allocate(total, weights){
+ const sum=weights.reduce((a,b)=>a+b,0);
+ let raw=weights.map(w=>total*w/sum), vals=raw.map(Math.floor);
+ let left=total-vals.reduce((a,b)=>a+b,0);
+ let order=raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]);
+ for(let j=0;j<left;j++) vals[order[j%order.length][1]]++;
+ return vals;
+}
+function neckCalc(){
+ const total=+$('nw').value, frows=+$('fd').value, brows=+$('bd').value;
+ if(!Number.isInteger(total)||!Number.isInteger(frows)||!Number.isInteger(brows)||total<1||frows<1||brows<1){
+  $('front').innerHTML='<b>目数・段数は整数で入力してください。</b>';$('back').innerHTML='';return;
+ }
+
+ function parityCenter(total, ratio){
+   const target=total*ratio;
+   let n=Math.round(target);
+   if((total-n)%2!==0){
+     const lo=n-1, hi=n+1;
+     if(lo<1)n=hi;
+     else if(hi>total)n=lo;
+     else n=Math.abs(lo-target)<=Math.abs(hi-target)?lo:hi;
+   }
+   return Math.max(1,Math.min(total,n));
+ }
+
+ // ---------- FRONT ----------
+ // 中央は約50％伏せる。残りを左右同数にする。
+ const fCenter=parityCenter(total,0.5);
+ const fSide=(total-fCenter)/2;
+
+ // 減らし目は、深さのおよそ半分を目安に使う。
+ // 形は「2段ごと大きく → 2目 → 1目 → 4段ごと1目」。
+ // ただし必要目数・段数に応じて回数を自動調整する。
+ let best=null;
+ const targetCurve=frows/2;
+
+ for(let big=1;big<=Math.max(1,fSide);big++){
+  for(let mid=0;mid<=Math.min(6,fSide);mid++){
+   for(let one=0;one<=Math.min(8,fSide);one++){
+    for(let four=0;four<=Math.min(8,fSide);four++){
+     if(big + 2*mid + one + four !== fSide) continue;
+     const used=2 + 2*mid + 2*one + 4*four;
+     if(used>frows) continue;
+
+     // 基本形を優先：
+     // 大きい減らし→2目減らし→1目減らし→4段ごと1目。
+     // カーブ段数は全体の半分付近を優先する。
+     let score=Math.abs(used-targetCurve)*8;
+     if(mid===0) score+=8;
+     if(one===0) score+=5;
+     if(frows>=24 && four===0) score+=5;
+     // 最初の大きい減らしは、片側目数の約1/3～2/5を目安。
+     score+=Math.abs(big-fSide*0.38)*1.5;
+     // 2目減らしは2回前後を好む。
+     score+=Math.abs(mid-2)*1.2;
+     // 同条件なら、平ら部分が半分に近いものを優先。
+     const flat=frows-used;
+     score+=Math.abs(flat-targetCurve)*2;
+
+     if(!best || score<best.score) best={big,mid,one,four,used,score};
+    }
+   }
+ }
+ }
+
+ // 万一組めない場合は、2段ごとの減らしだけで収める。
+ if(!best){
+   const big=Math.max(1,fSide);
+   best={big,mid:0,one:0,four:0,used:2,score:0};
+ }
+
+ let frontLines=[];
+ if(best.big>0) frontLines.push(`2段ごとに <b>${best.big}目減らす</b>`);
+ if(best.mid>0) frontLines.push(`2段ごとに <b>2目減らす${best.mid>1?' ×'+best.mid+'回':''}</b>`);
+ if(best.one>0) frontLines.push(`2段ごとに <b>1目減らす${best.one>1?' ×'+best.one+'回':''}</b>`);
+ if(best.four>0) frontLines.push(`4段ごとに <b>1目減らす${best.four>1?' ×'+best.four+'回':''}</b>`);
+
+ $('front').innerHTML=`<div class="result-title">前身頃</div>
+ <div>襟ぐり幅：<b>${total}目</b>　深さ：<b>${frows}段</b></div>
+ <div class="pattern"><b>${fCenter}目伏せる</b><br>
+ ${frontLines.join('<br>')}<br>
+ 残りは <b>まっすぐ編む</b></div>`;
+
+ // ---------- BACK ----------
+ // 6段以下は従来どおり：約80％を伏せ、基本2回で減らす。
+ // 6段を超える場合は約70％を伏せ、最後の1区間は平らに残し、
+ // 2段ごとの減らし回数を段数から決める。
+ let center, decs=[];
+
+ if(brows<=6){
+   center=parityCenter(total,0.8);
+   const side=(total-center)/2;
+   const maxOpsByRows=Math.max(1,Math.floor((brows-1)/2));
+   const ops=Math.max(1,Math.min(side,2,maxOpsByRows));
+   const q=Math.floor(side/ops), rem=side%ops;
+   for(let i=0;i<ops;i++) decs.push(q+(i<rem?1:0));
+ }else{
+   center=parityCenter(total,0.7);
+   const side=(total-center)/2;
+   const chances=Math.max(1,Math.floor(brows/2)-1); // 最後の2段程度は平
+   const ops=Math.max(1,Math.min(side,chances));
+
+   // side目をops回に、大→小になるよう配分。
+   // 各回最低1目。余りを前方ほど多めに配る。
+   decs=Array(ops).fill(1);
+   let left=side-ops;
+   let i=0;
+   while(left>0){
+     const idx=Math.min(ops-1, Math.floor(i/2));
+     decs[idx]++;
+     left--; i++;
+   }
+   decs.sort((a,b)=>b-a);
+ }
+
+ const groups=[];
+ for(const v of decs){
+   const last=groups[groups.length-1];
+   if(last && last.v===v) last.n++;
+   else groups.push({v,n:1});
+ }
+ const backLines=groups.map(x=>`2段ごとに <b>${x.v}目減らす${x.n>1?' ×'+x.n+'回':''}</b>`).join("<br>");
+
+ $('back').innerHTML=`<div class="result-title">後ろ身頃</div>
+ <div>襟ぐり幅：<b>${total}目</b>　深さ：<b>${brows}段</b></div>
+ <div class="pattern"><b>${center}目伏せる</b><br>
+ ${backLines}<br>
+ 残りは <b>まっすぐ編む</b></div>`;
+}
+gaugeCalc();
+zougenCalc();
+slopeCalc();
+neckCalc();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  document.querySelectorAll('input[name="slPurpose"]').forEach(function(radio){
+    radio.addEventListener("change", function(){
+      if(!this.checked) return;
+      if(this.value === "shoulder"){
+        document.getElementById("slRows").value = 18;
+        document.getElementById("slStitches").value = 28;
+      }else if(this.value === "sleeve"){
+        document.getElementById("slRows").value = 50;
+        document.getElementById("slStitches").value = 20;
+      }
+      slopeCalc();
+    });
+  });
+  document.querySelectorAll('input[type="number"]').forEach(function(input){
+    input.addEventListener("focus", function(){
+      setTimeout(() => this.select(), 0);
+    });
+    input.addEventListener("click", function(){
+      this.select();
+    });
+  });
+});
+</script>
+
+</body>
+</html>
