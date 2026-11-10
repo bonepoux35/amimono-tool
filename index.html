@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>編み物計算</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fbf8f3;color:#4c443d;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif;line-height:1.75}
+.wrap{max-width:700px;margin:auto;padding:20px 16px 45px}
+h1{text-align:center;font-size:25px;margin:5px 0 8px}
+.sub{text-align:right;color:#8b7d72;font-size:14px;margin-bottom:18px;padding-right:8px}
+.card{background:#fff;border:1px solid #eadfd5;border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #00000008}
+.gauge{background:#f7eee9;border:2px solid #dfb8ad}
+.title{font-size:20px;font-weight:800;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:14px;font-weight:700;display:block}
+input{width:100%;font-size:18px;padding:12px;border:1px solid #d8ccc2;border-radius:10px;margin-top:5px;background:#fff;color:#4c443d}
+button{width:100%;padding:14px;border:0;border-radius:12px;background:#c98f87;color:#fff;font-size:17px;font-weight:800;margin-top:15px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.tab{margin:0;padding:11px 6px;background:#eee5df;color:#655950;font-size:14px}
+.tab.active{background:#c98f87;color:#fff}
+.tool{display:none} .tool.active{display:block}
+.result-title{font-size:21px;font-weight:800}
+.pattern{background:#faf5f1;border-radius:13px;padding:15px;margin-top:12px}
+.pattern b{font-size:18px}
+.headline{font-size:21px;font-weight:800}
+.repeat{font-size:19px;font-weight:800;margin-top:10px}
+.small{font-size:13px;color:#766b61}.warning{color:#d33;font-weight:800;font-size:17px}
+.result b,.pattern b{font-weight:400}
+#zr .headline,#zr .repeat,#zr b,#zr .small{font-size:inherit;font-weight:400}
+.slope-numbers{font-size:18px;font-weight:800;letter-spacing:.18em;white-space:nowrap;overflow-x:auto;text-align:left;line-height:1.5;padding:8px 2px}
+.brand{text-align:center;color:#8b7d72;letter-spacing:1px;margin-top:28px}
+.counter-head{background:linear-gradient(135deg,#fff9f6,#f8ece7);border:2px solid #e5c4bb;position:relative;overflow:hidden}
+.counter-head:after{content:"";position:absolute;right:14px;top:5px;font-size:48px;opacity:.12;transform:rotate(12deg)}
+.counter-head .title{color:#7d5d56;margin-bottom:3px}
+.counter-main{border:2px solid #ead7d0;background:#fffdfb;display:grid;grid-template-rows:100px 96px 54px 112px 38px;align-items:center}
+.counter-current{text-align:center;color:#9a7e75;font-size:13px;font-weight:700;letter-spacing:.12em}
+.counter-num{text-align:center;font-size:82px;font-weight:900;line-height:1.05;margin:0;color:#9d655d;text-shadow:0 2px 0 #f5e7e2}
+.counter-num:after{content:" 段";font-size:20px;font-weight:700;color:#8b7d72;text-shadow:none}
+.counter-action{background:#fff4f1;border:2px solid #dfb8ad;text-align:center;font-size:20px;font-weight:800;color:#76534d;border-radius:18px;padding:10px 12px;box-shadow:inset 0 0 0 4px #fff;height:86px;overflow:auto;display:flex;align-items:center;justify-content:center;line-height:1.45}
+.counter-next{text-align:center;color:#766b61;margin:0;padding:8px 10px;background:#faf5f1;border-radius:12px;font-size:14px;min-height:42px;display:flex;align-items:center;justify-content:center}
+.counter-buttons{display:flex;justify-content:center;gap:18px;margin-top:0}
+.counter-buttons button{width:auto;min-width:76px;margin:0;padding:6px 13px;font-size:12px;background:#eee5df;color:#655950;border:1px solid #e0d3cb;border-radius:9px}
+.counter-plus{justify-self:center;width:210px;height:88px;margin:0;font-size:28px;padding:0;border-radius:24px;background:#c98f87;box-shadow:0 5px 0 #ae746d;transition:.08s transform,.08s box-shadow}
+.counter-plus:active{transform:translateY(3px);box-shadow:0 1px 0 #ae746d}
+.counter-link{margin-top:8px;background:#b9837c}
+.calc-import-mode{display:flex;gap:7px;justify-content:center;margin-top:10px}.calc-import-mode button{width:auto;margin:0;padding:7px 12px;font-size:12px;background:#eee5df;color:#655950;border:1px solid #e0d3cb;border-radius:10px}.calc-import-mode button.selected{background:#c98f87;color:#fff;border-color:#c98f87}
+.counter-plan-card{background:#fffaf7;border:1px dashed #dfb8ad}
+.counter-plan-title{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;color:#7d5d56;margin-bottom:8px}
+#counterPlan>div{padding:7px 9px;border-bottom:1px dotted #e7d8d1;border-radius:8px}
+#counterPlan>div:last-child{border-bottom:0}
+#counterPlan>div[style*="font-weight:800"]{background:#fff0ec;color:#7d514b}
+.counter-source-pill{display:inline-block;margin-top:5px;padding:4px 10px;border-radius:999px;background:#fff;color:#8b6d65;border:1px solid #ead7d0}
+.counter-tip{text-align:center;font-size:12px;color:#9a887f;margin-top:12px}
+.reset-row{display:flex;justify-content:flex-end;margin-top:8px}.reset-small{width:auto;margin:0;padding:6px 11px;font-size:12px;background:#eee5df;color:#655950;border:1px solid #e0d3cb;border-radius:9px}
+.counter-setup{background:#fffaf7;border:1px solid #eadfd5}
+.counter-setup .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.counter-setup input{font-size:16px;padding:10px}
+.counter-quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.counter-quick button{width:auto;margin:0;padding:8px 11px;font-size:13px;background:#eee5df;color:#655950}
+.counter-quick button.selected{background:#c98f87;color:#fff;border-color:#c98f87}
+.counter-add{margin-top:10px;background:#b9837c}
+.counter-end{display:flex;align-items:center;justify-content:center;gap:8px;background:#fffaf7;border:1px solid #eadfd5;padding:12px 14px}.counter-end label{margin:0;font-weight:700;color:#7b6a63}.counter-end input{width:82px;margin:0;padding:9px 8px;text-align:center;font-size:18px}.counter-end .unit{font-size:14px;color:#7b6a63;font-weight:700}
+.counter-start{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:13px;color:#7b6a63}
+.counter-start span{font-weight:700;margin-right:2px}.counter-start button{width:auto;margin:0;padding:7px 10px;font-size:12px;background:#eee5df;color:#655950}.counter-start button.selected{background:#c98f87;color:#fff;border-color:#c98f87}.rule-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eee2dc}.rule-row:last-child{border-bottom:0}.rule-actions{display:flex;gap:5px;flex-shrink:0}.rule-actions button{width:auto;margin:0;padding:4px 8px;font-size:11px;border-radius:8px;background:#eee5df;color:#655950}.rule-actions .delete{background:#f7ece8;color:#8a5e57}.editing-note{color:#9d655d;font-weight:700}
+@media(max-width:520px){.counter-setup .grid3{grid-template-columns:repeat(3,1fr);gap:6px}.counter-setup .grid3 label{font-size:12px}.counter-setup .grid3 input{font-size:16px;padding:10px 7px}.counter-setup .action-field{grid-column:1/-1}}
+@media(max-width:520px){.counter-num{font-size:76px}}
+@media(max-width:520px){
+ .grid{grid-template-columns:1fr}
+ .tabs{grid-template-columns:1fr}
+}
+#slopeResult .pattern{font-size:18px;font-weight:800;line-height:1.7}
+#slopeResult .pattern *{font-weight:800}
+
+.rule-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee3dc}.rule-row:last-child{border-bottom:none}.rule-text{min-width:0;line-height:1.55;word-break:normal;overflow-wrap:anywhere}.rule-delete{width:auto!important;min-width:58px;flex:none;border:0;border-radius:14px;padding:6px 10px!important;margin:0!important;background:#f2e8e2;color:#8b5d56;font-size:13px!important;font-weight:700;white-space:nowrap}.rule-delete:active{transform:scale(.97)}
+.counter-mode button{width:auto;padding:10px 18px;background:#eee5de;color:#66534d;border-radius:14px;font-weight:700}.counter-mode button.selected{background:#c98d84;color:#fff}.counter-mode span{color:#66534d}
+
+.calc-start-row{display:flex;align-items:center;gap:8px;margin:12px 0 8px;font-size:14px;font-weight:700;flex-wrap:wrap}.calc-start-row input{width:78px!important;padding:9px 10px!important;font-size:16px!important;text-align:center}.calc-start-row .unit{font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>編み物計算ツール</h1>
+<div class="sub">bon epoux</div>
+
+<div class="tabs">
+ <button class="tab active" onclick="showTool('gaugeTool',this)">目数・段数</button>
+ <button class="tab" onclick="showTool('zougenTool',this)">増し目・減らし目</button>
+ <button class="tab" onclick="showTool('slopeTool',this)">斜線</button>
+ <button class="tab" onclick="showTool('neckTool',this)">襟ぐり</button>
+ <button class="tab" onclick="showTool('counterTool',this)">段数カウンター</button>
+</div>
+
+<section id="gaugeTool" class="tool active">
+ <div class="card gauge">
+  <div class="title"> ゲージ</div>
+  <div class="grid">
+   <div><label>10cmの目数<input id="gs" type="number" min="1" step="0.1" value="20"></label></div>
+   <div><label>10cmの段数<input id="gr" type="number" min="1" step="0.1" value="26"></label></div>
+  </div>
+ </div>
+ <div class="card">
+  <div class="title">目数・段数の計算</div>
+  <div class="grid">
+   <div><label>幅（cm）<input id="gw" type="number" min="0" step="0.1" value="50"></label></div>
+   <div><label>長さ（cm）<input id="gh" type="number" min="0" step="0.1" value="50"></label></div>
+  </div>
+  <button onclick="gaugeCalc()">計算する</button>
+  <div class="reset-row"><button class="reset-small" onclick="resetTool('gauge')">リセット</button></div>
+ </div>
+ <div id="gaugeResult" class="card"></div>
+</section>
+
+<section id="zougenTool" class="tool">
+ <div class="card">
+  <div class="title">増し目・減らし目の計算</div>
+  <label>今の目数<input id="za" type="number" value="100"></label>
+  <label>仕上げたい目数<input id="zb" type="number" value="80"></label>
+  <label>左右の端に残す目数（片側）<input id="ze" type="number" value="2"></label>
+  <button onclick="zougenCalc()">計算する</button>
+  <div class="reset-row"><button class="reset-small" onclick="resetTool('zougen')">リセット</button></div>
+ </div>
+ <div class="card" id="zr"></div>
+</section>
+
+
+<section id="slopeTool" class="tool">
+ <div class="card">
+  <div class="title">斜線の計算</div>
+  <div class="grid">
+   <div><label>段数<input id="slRows" type="number" min="1" step="1" value="18"></label></div>
+   <div><label>目数<input id="slStitches" type="number" min="1" step="1" value="28"></label></div>
+  </div>
+  <div style="margin-top:12px">
+   <label>用途</label>
+   <label style="display:inline-block;margin-right:18px;font-weight:400">
+    <input type="radio" name="slPurpose" value="shoulder" checked style="width:auto;margin-right:5px">肩下がり
+   </label>
+   <label style="display:inline-block;font-weight:400">
+    <input type="radio" name="slPurpose" value="sleeve" style="width:auto;margin-right:5px">袖下・Vネック
+   </label>
+  </div>
+  <button onclick="slopeCalc()">計算する</button>
+  <div class="reset-row"><button class="reset-small" onclick="resetTool('slope')">リセット</button></div>
+ </div>
+ <div id="slopeResult" class="card"></div>
+</section>
+
+<section id="neckTool" class="tool">
+ <div class="card">
+  <div class="title">襟ぐりの計算</div>
+  <div class="grid">
+   <div><label>襟ぐりの幅（目）<input id="nw" type="number" min="1" step="1" value="40"></label></div>
+   <div><label>前身頃の深さ（段）<input id="fd" type="number" min="1" step="1" value="28"></label></div>
+   <div><label>後ろ身頃の深さ（段）<input id="bd" type="number" min="1" step="1" value="8"></label></div>
+  </div>
+  <button onclick="neckCalc()">計算する</button>
+  <div class="reset-row"><button class="reset-small" onclick="resetTool('neck')">リセット</button></div>
+ </div>
+ <div id="front" class="card"></div>
+ <div id="back" class="card"></div>
+</section>
+
+<section id="counterTool" class="tool">
+ <div class="card counter-head">
+  <div class="title"> 段数カウンター</div>
+  <div id="counterSource" class="small counter-source-pill">必要な編み方を保存できます</div>
+ </div>
+ <div class="card counter-setup">
+  <div class="title" style="font-size:17px">自分で予定を入れる</div>
+  <div class="counter-quick" style="margin-top:4px">
+   <button type="button" data-kind="increase" onclick="selectManualKind(this,'increase')">増し目</button>
+   <button type="button" data-kind="decrease" onclick="selectManualKind(this,'decrease')">減らし目</button>
+   <button type="button" data-kind="cross" onclick="selectManualKind(this,'cross')">交差</button>
+   <button type="button" data-kind="other" onclick="selectManualKind(this,'other')">その他</button>
+  </div>
+  <div id="manualNumberFields" class="grid3" style="margin-top:10px">
+   <div><label>何段ごと？<input id="manualGap" type="number" inputmode="numeric" enterkeyhint="next" min="1" step="1" placeholder="4"></label></div>
+   <div><label>何目？<input id="manualStitches" type="number" inputmode="numeric" enterkeyhint="next" min="1" step="1" placeholder="1"></label></div>
+   <div><label>何回？<input id="manualTimes" type="number" inputmode="numeric" enterkeyhint="done" min="1" step="1" placeholder="6"></label></div>
+  </div>
+  <div id="manualCrossEnd" style="display:none;margin-top:10px"><label for="manualCrossEndRow">最終段（任意）<input id="manualCrossEndRow" type="number" inputmode="numeric" min="1" step="1" placeholder="例：100"></label><div class="small">空欄なら交差を続けます。襟ぐりなどの終了段がある場合は、そちらを優先します。</div></div>
+  <div id="manualOtherFields" style="display:none;margin-top:10px">
+   <div class="grid2">
+    <div><label>何段？<input id="manualOtherRow" type="number" inputmode="numeric" enterkeyhint="next" min="1" step="1" placeholder="25"></label></div>
+    <div><label>メモ<input id="manualMemo" type="text" enterkeyhint="done" maxlength="30" placeholder="例：印を付ける"></label></div>
+   </div>
+  </div>
+  <div class="counter-mode" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px">
+   <span style="font-weight:700">登録方法</span>
+   <button type="button" class="selected" data-mode="add" onclick="selectManualMode(this,'add')">追加</button>
+   <button type="button" data-mode="continue" onclick="selectManualMode(this,'continue')">続けて</button>
+  </div>
+  <div class="counter-start">
+   <span>開始段</span>
+   <input id="manualStartRow" type="number" inputmode="numeric" min="1" step="1" value="1" aria-label="開始段" style="width:100px;margin:0;padding:8px 10px;text-align:center">
+   <span>段目から</span>
+  </div>
+  <!-- 計算結果との連携用。開始・終了段は画面に表示しない -->
+  <input id="counterStartRow" type="hidden" value="1">
+  <input id="counterEndRow" type="hidden" value="">
+  <button id="manualAddBtn" class="counter-add" onclick="addManualCounter()">予定を追加</button>
+  <div id="manualMessage" class="small" style="margin-top:7px"></div>
+ </div>
+ <div class="card counter-main">
+  <div id="counterNum" class="counter-num">0</div>
+  <div id="counterAction" class="pattern counter-action">編み始め</div>
+  <div id="counterNext" class="counter-next">次の予定をここに表示します</div>
+  <button class="counter-plus" onclick="counterStep(1)">タップ</button>
+  <div class="counter-buttons" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+   <button type="button" onclick="adjustFutureRows(-1)">1段削除</button>
+   <button type="button" onclick="adjustFutureRows(1)">1段追加</button>
+   <button type="button" id="counterUndoEdit" onclick="undoFutureRowEdit()" disabled>調整を戻す</button>
+  </div>
+  <div id="counterEditMessage" class="small" style="text-align:center;margin:5px 0 8px">現在の段より先の予定を調整します</div>
+  <div class="counter-buttons">
+   <button onclick="counterStep(-1)">戻る</button>
+   <button onclick="counterReset()">リセット</button>
+  </div>
+  
+ </div>
+ <div class="card counter-plan-card">
+  <div class="counter-plan-title">登録した予定</div>
+  <div id="counterRulesList" class="small" style="margin-bottom:12px">まだ予定はありません。</div>
+  <div class="counter-plan-title">このあとの予定</div>
+  <div id="counterPlan" class="small">まだ予定はありません。</div>
+ </div>
+</section>
+
+<div class="brand">bon epoux</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const r=x=>Math.max(1,Math.round(x));
+
+function showTool(id,btn){
+ // 項目を移動する前に、現在の入力・カウンター状態を必ず保存する。
+ try{saveCounterState();saveFormState();}catch(e){}
+ document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ $(id).classList.add('active'); btn.classList.add('active');
+ if(id==='counterTool'){ try{loadCounterState();}catch(e){} renderCounter(); }
+ try{localStorage.setItem('bonEpouxActiveTool',id);}catch(e){}
+}
+
+const FORM_STORAGE_KEY='bonEpouxFormStateV1';
+const TOOL_DEFAULTS={
+ gauge:{gs:'20',gr:'26',gw:'50',gh:'50'},
+ zougen:{za:'100',zb:'80',ze:'2'},
+ slope:{slRows:'18',slStitches:'28',slPurpose:'shoulder'},
+ neck:{nw:'40',fd:'28',bd:'8'}
+};
+const FORM_IDS=['gs','gr','gw','gh','za','zb','ze','nw','fd','bd'];
+let slopeModeValues={shoulder:{rows:'18',stitches:'28'},sleeve:{rows:'50',stitches:'12'}};
+let currentSlopePurpose='shoulder';
+function saveFormState(){
+ try{
+  const data={}; FORM_IDS.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
+  const purpose=document.querySelector('input[name="slPurpose"]:checked'); data.slPurpose=purpose?purpose.value:'shoulder';
+  data.slopeModeValues=slopeModeValues;
+  localStorage.setItem(FORM_STORAGE_KEY,JSON.stringify(data));
+ }catch(e){}
+}
+function loadFormState(){
+ try{
+  const raw=localStorage.getItem(FORM_STORAGE_KEY); if(!raw)return false;
+  const data=JSON.parse(raw)||{};
+  FORM_IDS.forEach(id=>{if(data[id]!==undefined&&$(id))$(id).value=data[id];});
+  if(data.slopeModeValues&&data.slopeModeValues.shoulder&&data.slopeModeValues.sleeve){slopeModeValues=data.slopeModeValues;}
+  if(data.slPurpose){const r=document.querySelector('input[name="slPurpose"][value="'+data.slPurpose+'"]');if(r)r.checked=true; currentSlopePurpose=data.slPurpose;}
+  const sv=slopeModeValues[currentSlopePurpose]||slopeModeValues.shoulder; $('slRows').value=sv.rows; $('slStitches').value=sv.stitches;
+  return true;
+ }catch(e){return false}
+}
+function resetTool(kind){
+ const d=TOOL_DEFAULTS[kind]; if(!d)return;
+ Object.keys(d).forEach(k=>{
+  if(k==='slPurpose'){const r=document.querySelector('input[name="slPurpose"][value="'+d[k]+'"]');if(r)r.checked=true;}
+  else if($(k))$(k).value=d[k];
+ });
+ saveFormState();
+ if(kind==='gauge')gaugeCalc();
+ if(kind==='zougen')zougenCalc();
+ if(kind==='slope'){ currentSlopePurpose='shoulder'; slopeModeValues={shoulder:{rows:'18',stitches:'28'},sleeve:{rows:'50',stitches:'12'}}; $('slRows').value='18'; $('slStitches').value='28'; slopeCalc(); saveFormState(); }
+ if(kind==='neck')neckCalc();
+}
+function restoreActiveTool(){
+ try{
+  const id=localStorage.getItem('bonEpouxActiveTool'); if(!id||!$(id))return;
+  const tab=[...document.querySelectorAll('.tab')].find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"));
+  if(tab)showTool(id,tab);
+ }catch(e){}
+}
+function gaugeCalc(){
+ const gs=+$('gs').value, gr=+$('gr').value, w=+$('gw').value, h=+$('gh').value;
+ if([gs,gr,w,h].some(x=>!isFinite(x)||x<0)||gs<=0||gr<=0){
+  $('gaugeResult').innerHTML='<b>数字を正しく入力してください。</b>'; return;
+ }
+ const stitches=Math.round(w*gs/10);
+ const rows=Math.round(h*gr/10);
+ $('gaugeResult').innerHTML=`<div class="pattern" style="border:2px solid #dfb8ad;background:#fff7f4">
+ <div class="small">${w}cm</div>
+ <div style="font-size:25px;font-weight:800;margin-bottom:12px">${stitches}目</div>
+ <div class="small">${h}cm</div>
+ <div style="font-size:25px;font-weight:800">${rows}段</div>
+ </div>`;
+}
+
+function gcd(a,b){while(b){let t=a%b;a=b;b=t}return a}
+function zougenCalc(){
+ let a=+document.getElementById("za").value,b=+document.getElementById("zb").value,e=+document.getElementById("ze").value,r=document.getElementById("zr");
+ if(!Number.isInteger(a)||!Number.isInteger(b)||!Number.isInteger(e)||a<1||b<1||e<0){r.innerHTML="整数で入力してください。";return}
+ if(a===b){r.innerHTML='<div class="headline">増し目・減らし目は必要ありません。</div>';return}
+ let n=Math.abs(b-a), inc=b>a, usable=a-2*e;
+ if(usable<=0){r.innerHTML="端に残す目数が多すぎます。";return}
+
+ /* 増し目は、両端を除いた元の目数を超える回数は配置できない */
+ if(inc && n>usable){
+  r.innerHTML='<div class="warning">この目数では計算できません。<br>もう一度入力してください。</div>';
+  return
+ }
+ if(!inc && n>=usable/2){
+  r.innerHTML='<div class="warning">減らす目数が多すぎます。<br>もう一度入力してください。</div>';
+  return
+ }
+
+ /* 操作をできるだけ均等に配置 */
+ let base=Math.floor(usable/n), rem=usable%n;
+ let low=base-1, high=base;
+ let highCount=rem, lowCount=n-rem;
+ function phrase(x){return (x>0?x+"目編んで1目":"1目")+(inc?"増やす":"減らす")}
+ function times(k){return '<span style="font-weight:800">×'+k+'回</span>'}
+ let pat="";
+ if(highCount===0 || lowCount===0){
+  const x=highCount===0?low:high;
+  pat=phrase(x)+(n>1?" "+times(n):"");
+ }else{
+  let major,majorCount,minor,minorCount;
+  if(lowCount>=highCount){major=low;majorCount=lowCount;minor=high;minorCount=highCount}
+  else{major=high;majorCount=highCount;minor=low;minorCount=lowCount}
+
+  // 少ない方が1回だけなら、繰り返しのまとまりではないので◎は使わない。
+  if(minorCount===1){
+   let lines=[];
+   let first=phrase(major);
+   if(majorCount>1) first+=" "+times(majorCount);
+   lines.push(first,phrase(minor));
+   pat=lines.join("<br>");
+  }else{
+   const per=Math.floor(majorCount/minorCount), rest=majorCount%minorCount;
+   let lines=[];
+   let first="◎"+phrase(major);
+   if(per>1) first+=" "+times(per);
+   lines.push(first,phrase(minor),"◎"+times(minorCount));
+   if(rest>0){let tail=phrase(major);if(rest>1)tail+=" "+times(rest);lines.push(tail)}
+   pat=lines.join("<br>");
+  }
+ }
+
+  let edgeText=e?`<div class="small" style="margin-top:10px">※両端は${e}目編む</div>`:"";
+ r.innerHTML=`<div class="pattern" style="font-weight:800">${pat}</div>${edgeText}`;
+}
+
+function slopeCalc(){
+ const stitches=+$('slStitches').value, rows=+$('slRows').value;
+ const out=$('slopeResult');
+ if(!Number.isInteger(stitches)||!Number.isInteger(rows)||stitches<1||rows<1){
+  out.innerHTML='<b>整数で入力してください。</b>'; return;
+ }
+ const purpose=document.querySelector('input[name="slPurpose"]:checked').value;
+
+ if(purpose==="shoulder"){
+  if(rows%2!==0){
+   out.innerHTML='<div class="warning" style="font-size:13px">肩下がりは2段ごとに計算します。<br>段数は偶数で入力してください。</div>'; return;
+  }
+  const times=rows/2;
+  if(times>stitches){
+   out.innerHTML='<div class="warning" style="font-size:13px">この段数では、1回に1目以上振り分けられません。<br>もう一度入力してください。</div>'; return;
+  }
+  const base=Math.floor(stitches/times), rem=stitches%times;
+  let parts=[];
+  if(rem>0) parts.push(`　2段ごとに ${base+1}目減らす${rem>1?` ×${rem}回`:''}`);
+  const rest=times-rem;
+  if(rest>0) parts.push(`　2段ごとに ${base}目減らす${rest>1?` ×${rest}回`:''}`);
+  let ev=[], rr=0;
+  if(rem>0){for(let i=0;i<rem;i++){rr+=2;ev.push({row:rr,text:(base+1)+'目減らす'});}}
+  for(let i=0;i<rest;i++){rr+=2;ev.push({row:rr,text:base+'目減らす'});}
+  slopeCounterData.shoulder=ev;
+  out.innerHTML=`<div class="pattern slope-numbers" style="white-space:normal">${parts.join('<br>')}</div><div class="neck-side-select" style="margin:12px 0 8px"><span style="font-weight:700;margin-right:10px">カウンター用</span><label style="display:inline-block;margin-right:16px"><input type="radio" name="shoulderSide" value="right"> 右用</label><label style="display:inline-block"><input type="radio" name="shoulderSide" value="left" checked> 左用</label></div><div class="calc-start-row"><label for="slopeStartShoulder">開始段</label><input id="slopeStartShoulder" type="number" inputmode="numeric" min="1" step="1" value="1" onfocus="this.select()" onclick="this.select()"><span class="unit">段目から</span></div><div class="calc-import-mode" data-mode="new"><button class="selected" onclick="selectCalcImportMode(this,'new')">新しく</button><button onclick="selectCalcImportMode(this,'add')">追加</button></div><button class="counter-link" onclick="setSlopeCounter('shoulder','肩下がり','slopeStartShoulder',${rows},getCalcImportMode(this))">この結果をカウンターで編む</button>`;
+  return;
+ }
+
+ // 袖下・Vネック：減らす回数＋最後の平編み1区間。
+ // 各区間は2・4・6…の偶数段だけで、できるだけ均等にする。
+ const sections=stitches+1;
+ const minRows=sections*2;
+ if(rows%2!==0){
+  out.innerHTML='<div class="warning" style="font-size:13px">袖下・Vネックは偶数段で計算します。<br>段数は偶数で入力してください。</div>'; return;
+ }
+ if(rows<minRows){
+  out.innerHTML=`<div class="warning" style="font-size:13px">この段数では計算できません。<br>段数を${minRows}段以上にしてください。</div>`; return;
+ }
+ const avg=rows/sections;
+ let low=Math.floor(avg/2)*2;
+ if(low<2) low=2;
+ let high=low;
+ if(rows!==low*sections) high=low+2;
+ const highCount=high===low?0:(rows-low*sections)/(high-low);
+ if(!Number.isInteger(highCount)||highCount<0||highCount>sections){
+  out.innerHTML='<div class="warning" style="font-size:13px">この組み合わせでは偶数段に均等配分できません。<br>もう一度入力してください。</div>'; return;
+ }
+
+ // 袖下・Vネックは、同じ目数・段数を2通りの並べ方で表示する。
+ // ①まとめる ②均等に散らす
+ function makeVals(mode){
+  if(highCount===0) return Array(sections).fill(low);
+  let a=Array(sections).fill(low);
+  if(mode==="group"){
+   // 大きい間隔を前にまとめる。
+   for(let i=0;i<highCount;i++) a[i]=high;
+  }else{
+   // 全体にできるだけ均等に散らす。
+   for(let i=0;i<sections;i++){
+    const before=Math.floor((i*highCount + sections-1)/sections);
+    const after=Math.floor(((i+1)*highCount + sections-1)/sections);
+    a[i]=after>before?high:low;
+   }
+  }
+  return a;
+ }
+
+ // 共通表示ルール：同じ1行は×○回、複数行の繰り返しは◎～◎×○回。
+ function formatPattern(vals){
+  const dec=vals.slice(0,-1), flat=vals[vals.length-1];
+  function bestRepeat(a){
+   let best=null;
+   for(let len=1;len<=Math.floor(a.length/2);len++){
+    const block=a.slice(0,len); let reps=1;
+    while((reps+1)*len<=a.length){
+     let ok=true;
+     for(let j=0;j<len;j++) if(a[reps*len+j]!==block[j]){ok=false;break;}
+     if(!ok) break; reps++;
+    }
+    if(reps>=2){
+     const covered=reps*len;
+     if(!best || covered>best.covered || (covered===best.covered && len<best.len)) best={len,reps,covered,block};
+    }
+   }
+   return best;
+  }
+  // 同じ内容が連続する部分は、どこにあっても必ず×○回にまとめる。
+  function appendRuns(a){
+   for(let i=0;i<a.length;){
+    let j=i+1; while(j<a.length&&a[j]===a[i])j++;
+    lines.push(`　${a[i]}段ごとに1目減らす${j-i>1?`×${j-i}回`:''}`);
+    i=j;
+   }
+  }
+
+  const rep=bestRepeat(dec); let lines=[];
+  if(rep){
+   if(rep.len===1){
+    lines.push(`　${rep.block[0]}段ごとに1目減らす×${rep.reps}回`);
+   }else{
+    rep.block.forEach((v,i)=>lines.push(`${i===0?'　◎':'　　'}${v}段ごとに1目減らす`));
+    lines.push(`　◎×${rep.reps}回`);
+   }
+   // 繰り返し後に残った部分も、同じ行が続けば×○回にまとめる。
+   appendRuns(dec.slice(rep.covered));
+  }else{
+   appendRuns(dec);
+  }
+  lines.push(`　${flat}段平`);
+  return lines.join('<br>');
+ }
+
+ const patterns=[
+  ['まとめる',makeVals('group')],
+  ['均等に散らす',makeVals('even')]
+ ];
+ slopeCounterData={...slopeCounterData};
+ patterns.forEach(([title,v],idx)=>{
+  let rr=0, ev=[];
+  v.slice(0,-1).forEach(gap=>{rr+=gap;ev.push({row:rr,text:'1目減らす'});});
+  slopeCounterData['sleeve'+idx]=ev;
+ });
+ out.innerHTML=patterns.map(([title,v],idx)=>
+  `<div class="pattern" style="margin-bottom:12px"><div style="font-size:15px;font-weight:800;margin-bottom:7px">${title}</div><div class="slope-numbers" style="white-space:normal;font-size:16px;font-weight:800;letter-spacing:0;line-height:1.65">${formatPattern(v)}</div><div class="calc-start-row"><label for="slopeStartSleeve${idx}">開始段</label><input id="slopeStartSleeve${idx}" type="number" inputmode="numeric" min="1" step="1" value="1" onfocus="this.select()" onclick="this.select()"><span class="unit">段目から</span></div><div class="calc-import-mode" data-mode="new"><button class="selected" onclick="selectCalcImportMode(this,'new')">新しく</button><button onclick="selectCalcImportMode(this,'add')">追加</button></div><button class="counter-link" onclick="setSlopeCounter('sleeve${idx}','袖下・Vネック（${title}）','slopeStartSleeve${idx}',${rows},getCalcImportMode(this))">この結果をカウンターで編む</button></div>`
+ ).join('');
+}
+
+function allocate(total, weights){
+ const sum=weights.reduce((a,b)=>a+b,0);
+ let raw=weights.map(w=>total*w/sum), vals=raw.map(Math.floor);
+ let left=total-vals.reduce((a,b)=>a+b,0);
+ let order=raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]);
+ for(let j=0;j<left;j++) vals[order[j%order.length][1]]++;
+ return vals;
+}
+let neckCounterData={front:[],back:[]};
+let neckCounterBindOff={front:0,back:0};
+let slopeCounterData={};
+let counterEvents=[];
+let counterCalcGroups=[];
+let counterRules=[];
+let counterRow=0;
+let counterLabel='';
+let counterStartRow=1;
+let counterEndRow=null;
+let counterCalcBaseEvents=[];
+let counterRowEdits=[];
+let counterEditUndo=[];
+const COUNTER_STORAGE_KEY='bonEpouxCounterState';
+
+function saveCounterState(){
+ try{
+  const payload=JSON.stringify({events:counterEvents,calcGroups:counterCalcGroups,rules:counterRules,row:counterRow,label:counterLabel,startRow:counterStartRow,endRow:counterEndRow,calcBaseEvents:counterCalcBaseEvents,rowEdits:counterRowEdits,savedAt:Date.now()});
+  localStorage.setItem(COUNTER_STORAGE_KEY,payload);
+ }catch(e){}
+}
+function loadCounterState(){
+ try{
+  const raw=localStorage.getItem(COUNTER_STORAGE_KEY);
+  if(!raw)return false;
+  const data=JSON.parse(raw);
+  if(!data||!Array.isArray(data.events)||!Number.isInteger(data.row))return false;
+  counterEvents=data.events.filter(x=>x&&Number.isInteger(x.row)&&x.row>=0&&typeof x.text==='string').sort((a,b)=>a.row-b.row);
+  counterCalcGroups=Array.isArray(data.calcGroups)?data.calcGroups.filter(g=>g&&typeof g.id==='string'&&typeof g.label==='string'):[];
+  // Earlier saved calculations had no group IDs. Show them as one removable group.
+  const ungrouped=counterEvents.filter(e=>!e.groupId);
+  if(ungrouped.length){
+   const id='legacy-calculation';
+   ungrouped.forEach(e=>e.groupId=id);
+   if(!counterCalcGroups.some(g=>g.id===id))counterCalcGroups.push({id,label:data.label||'以前の計算結果'});
+  }
+  counterRowEdits=Array.isArray(data.rowEdits)?data.rowEdits.filter(e=>Number.isInteger(e.after)&&Math.abs(e.delta)===1):[];
+  counterEditUndo=[];
+  counterRules=Array.isArray(data.rules)?data.rules.filter(x=>x&&Number.isInteger(x.gap)&&x.gap>0&&Number.isInteger(x.start)&&x.start>0&&typeof x.text==='string'):[];
+  counterRow=Math.max(0,data.row);
+  counterLabel=typeof data.label==='string'?data.label:'';
+  counterStartRow=Number.isInteger(data.startRow)&&data.startRow>0?data.startRow:1;
+  // 旧版の手動カウンターに残っていた初期値50は終了指定とみなさない。
+  const savedEnd=Number.isInteger(data.endRow)&&data.endRow>0?data.endRow:null;
+  counterEndRow=counterCalcGroups.length?savedEnd:null;
+  counterCalcBaseEvents=Array.isArray(data.calcBaseEvents)?data.calcBaseEvents.filter(x=>x&&Number.isInteger(x.row)&&x.row>0&&typeof x.text==='string'):[];
+  if($('counterStartRow')) $('counterStartRow').value=counterStartRow;
+  if($('counterEndRow')) $('counterEndRow').value=counterEndRow;
+  const hasSavedState = counterRow>0 || counterEvents.length>0 || counterRules.length>0 || !!counterLabel || !!counterEndRow;
+  if(!hasSavedState){
+   $('counterSource').textContent='必要な編み方を保存できます';
+   return false;
+  }
+  $('counterSource').textContent=counterLabel?counterLabel+'を使用中です。':'保存したカウンターを再開しました。';
+  return true;
+ }catch(e){return false}
+}
+
+function rulesToCounterEvents(rules){
+ let row=0, out=[];
+ for(const rule of rules){
+  for(let i=0;i<rule.times;i++){
+   row+=rule.gap;
+   out.push({row:row,text:rule.amount+'目減らす'});
+  }
+ }
+ return out;
+}
+function setCounterEvents(events,label){
+ counterCalcBaseEvents=events.slice().sort((a,b)=>a.row-b.row);
+ counterEvents=counterCalcBaseEvents.map(e=>({row:e.row+(counterStartRow-1),text:e.text}));
+ counterRules=[];
+ counterCalcGroups=[];
+ counterRow=0;
+ counterLabel=label||'';
+ $('counterSource').textContent=(counterLabel?counterLabel+'をセットしました。':'予定をセットしました。');
+ saveCounterState();
+ renderCounter();
+ const tab=[...document.querySelectorAll('.tab')].find(b=>b.textContent.trim()==='段数カウンター');
+ showTool('counterTool',tab);
+}
+let manualKind='';
+let manualStart=1;
+let manualMode='add';
+function selectManualMode(btn,mode){
+ manualMode=mode;
+ document.querySelectorAll('.counter-mode button').forEach(b=>b.classList.toggle('selected',b===btn));
+ const startBox=document.querySelector('.counter-start');
+ if(startBox) startBox.style.opacity=mode==='continue'?'0.45':'1';
+ $('manualStartRow').disabled=mode==='continue';
+}
+function selectManualKind(btn,kind){
+ manualKind=kind;
+ document.querySelectorAll('.counter-quick button').forEach(b=>b.classList.toggle('selected',b===btn));
+ const gap=$('manualGap'), stitches=$('manualStitches'), times=$('manualTimes');
+ const numberFields=$('manualNumberFields'), otherFields=$('manualOtherFields');
+ numberFields.style.display='grid'; otherFields.style.display='none';
+ $('manualCrossEnd').style.display=kind==='cross'?'block':'none';
+ $('manualOtherRow').value=''; $('manualMemo').value='';
+ document.querySelector('.counter-start').style.display='flex';
+ gap.disabled=false; stitches.disabled=false; times.disabled=false;
+ gap.placeholder='4'; stitches.placeholder='1'; times.placeholder='6';
+ if(kind==='cross'){
+  stitches.value=''; stitches.disabled=true; stitches.placeholder='';
+  times.value=''; times.disabled=true; times.placeholder='';
+  // 交差は基本「追加」「3段目から」を規定値にする
+  manualMode='add';
+  document.querySelectorAll('.counter-mode button').forEach(b=>b.classList.toggle('selected',b.dataset.mode==='add'));
+  manualStart=3;
+  $('manualStartRow').value='3';
+  $('manualStartRow').disabled=false;
+  const startBox=document.querySelector('.counter-start');
+  if(startBox) startBox.style.opacity='1';
+  setTimeout(()=>gap.focus(),0);
+ }else if(kind==='other'){
+  numberFields.style.display='none'; otherFields.style.display='block';
+  document.querySelector('.counter-start').style.display='none';
+  setTimeout(()=>$('manualOtherRow').focus(),0);
+ }else{
+  manualStart=1;
+  $('manualStartRow').value='1';
+  $('manualStartRow').disabled=manualMode==='continue';
+  setTimeout(()=>gap.focus(),0);
+ }
+}
+function addManualCounter(){
+ const gap=+$('manualGap').value, stitches=+$('manualStitches').value, times=+$('manualTimes').value;
+ const memo=$('manualMemo').value.trim();
+ const otherRow=+$('manualOtherRow').value;
+ const crossEndRaw=$('manualCrossEndRow').value.trim();
+ const crossEnd=crossEndRaw===''?null:Number(crossEndRaw);
+ const msg=$('manualMessage');
+ if(!manualKind){msg.textContent='「増し目／減らし目／交差／その他」を選んでください。';return;}
+ let rule;
+ if(manualKind==='other'){
+  if(!Number.isInteger(otherRow)||otherRow<1){msg.textContent='何段にメモするか入力してください。';return;}
+  if(!memo){msg.textContent='メモを入力してください。';return;}
+  rule={gap:1,start:otherRow,times:1,text:memo,kind:'other'};
+ }else{
+  if(!Number.isInteger(gap)||gap<1){msg.textContent='何段ごとか入力してください。';return;}
+  if(manualKind!=='cross'&&(!Number.isInteger(stitches)||stitches<1||!Number.isInteger(times)||times<1)){
+   msg.textContent='目数と回数を入力してください。';return;
+  }
+  const text=manualKind==='increase'?stitches+'目増やす':manualKind==='decrease'?stitches+'目減らす':'交差';
+  let start=Number($('manualStartRow').value);
+  if(manualMode!=='continue' && (!Number.isInteger(start)||start<1)){msg.textContent='開始段は1以上の整数で入力してください。';return;}
+  if(manualMode==='continue'){
+   // 「続けて」は前の操作日ではなく、前の予定の全段数を編み終えた次の奇数段から。
+   // 例：1段目から4段ごと×3回＝1,5,9段目（12段目までの区間）。次は13段目。
+   let completedThrough=0;
+   let hasInfinite=false;
+   counterRules.forEach(r=>{
+    if(r.times==null && !Number.isInteger(r.end)){hasInfinite=true;return;}
+    const end=r.times==null?r.end:r.start+r.gap*r.times-1;
+    if(end>completedThrough)completedThrough=end;
+   });
+   counterCalcGroups.forEach(g=>{if(Number.isInteger(g.end)&&g.end>completedThrough)completedThrough=g.end;});
+   counterEvents.forEach(e=>{if(e.row>completedThrough)completedThrough=e.row;});
+   if(hasInfinite){msg.textContent='終了段のない交差予定があるため「続けて」は使えません。「追加」を選んでください。';return;}
+   if(completedThrough<1){msg.textContent='「続けて」にする前の予定がありません。先に予定を登録してください。';return;}
+   start=completedThrough+1;
+  }
+  // 増し目・減らし目・交差は、表側の奇数段で操作する。
+  if(start%2===0)start++;
+  if(manualKind==='cross' && crossEnd!==null && (!Number.isInteger(crossEnd)||crossEnd<start)){msg.textContent='最終段は開始段以上の整数で入力してください。';return;}
+  rule={gap:gap,start:start,times:manualKind==='cross'?null:times,text:text,kind:manualKind,mode:manualMode};
+  if(manualKind==='cross')rule.end=crossEnd;
+ }
+ rule.uid='manual-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+ counterRules.push(rule);
+ counterLabel='自分で入力した予定';
+ $('counterSource').textContent=counterLabel+'を使用中です。';
+ msg.textContent=ruleSummary(rule)+' を追加しました。';
+ saveCounterState(); renderCounter();
+}
+function ruleSummary(rule){
+ const start=rule.start+'段目から ';
+ if(rule.kind==='other')return rule.start+'段目　'+rule.text;
+ const prefix=rule.mode==='continue'?'続けて　':'';
+ if(rule.kind==='cross'||rule.times==null)return prefix+start+rule.gap+'段ごとに交差'+(rule.end?'（'+rule.end+'段目まで）':'');
+ return prefix+start+rule.gap+'段ごと '+rule.text+' ×'+rule.times+'回';
+}
+function ruleEventsThrough(maxRow){
+ const out=[];
+ counterRules.forEach(rule=>{
+  const limit=rule.times==null?Math.max(0,Math.floor((maxRow-rule.start)/rule.gap)+1):rule.times;
+  for(let i=0;i<limit;i++){
+   let row=rule.start+rule.gap*i;
+   if(row>maxRow+counterRowEdits.length)break;
+   // Apply only row edits made while this rule was already registered.
+   for(const edit of counterRowEdits){
+    if(!edit.ruleIds || !edit.ruleIds.includes(rule.uid))continue;
+    if(row>edit.after)row+=edit.delta;
+   }
+   if(row>=1 && (rule.end==null || row<=rule.end))out.push({row:row,text:rule.text});
+  }
+ });
+ return out;
+}
+function allCounterEvents(maxRow){
+ const cap=counterCalcGroups.length && counterEndRow!=null?counterEndRow:null;
+ return counterEvents.concat(ruleEventsThrough(maxRow)).filter(e=>cap===null||e.row<=cap).sort((a,b)=>a.row-b.row);
+}
+// 計算結果は表を見て操作する前提で、最初の操作を1段目に置く。
+// 以後の「2段ごと／4段ごと」などの間隔はそのまま保つため、
+// 計算用に作ったイベント全体を1段だけ手前へずらす。
+function calcEventsToOddRows(events){
+ return events.map(e=>({row:Math.max(1,e.row-1),text:e.text}));
+}
+function getCalcStartRow(inputId){
+ const el=$(inputId);
+ const v=el?+el.value:1;
+ return Number.isInteger(v)&&v>0?v:1;
+}
+function selectCalcImportMode(btn,mode){
+ const box=btn.closest('.calc-import-mode');
+ if(!box)return;
+ box.dataset.mode=mode;
+ box.querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b===btn));
+}
+function getCalcImportMode(btn){
+ const box=btn.previousElementSibling;
+ return box&&box.classList.contains('calc-import-mode')?(box.dataset.mode||'new'):'new';
+}
+function applyCalculatedCounter(events,label,startRow,totalRows,mode='new'){
+ const groupId='calc-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+ const shifted=events.map(e=>({row:e.row+(startRow-1),text:e.text,groupId}));
+ const thisEnd=startRow+Math.max(1,totalRows)-1;
+ if(mode==='add' && (counterEvents.length||counterRules.length||counterRow>0||counterLabel)){
+  counterEvents=counterEvents.concat(shifted).sort((a,b)=>a.row-b.row);
+  counterCalcGroups.push({id:groupId,label:label,start:startRow,end:thisEnd});
+  counterEndRow=Math.max(counterEndRow||0,thisEnd);
+  counterLabel=counterLabel?counterLabel+' ＋ '+label:label;
+  // 追加時は既存予定を動かさないため、開始段の一括移動対象にはしない
+  counterCalcBaseEvents=[];
+  $('counterSource').textContent=label+'を追加しました。';
+ }else{
+  counterStartRow=startRow;
+  counterEndRow=thisEnd;
+  counterCalcBaseEvents=events.slice().sort((a,b)=>a.row-b.row);
+  counterEvents=shifted;
+  counterRowEdits=[];
+  counterEditUndo=[];
+  counterCalcGroups=[{id:groupId,label:label,start:startRow,end:thisEnd}];
+  counterRules=[];
+  counterRowEdits=[];
+  counterEditUndo=[];
+  counterRow=0;
+  counterLabel=label||'';
+  $('counterSource').textContent=(counterLabel?counterLabel+'をセットしました。':'予定をセットしました。');
+ }
+ if($('counterStartRow')) $('counterStartRow').value=counterStartRow;
+ if($('counterEndRow')) $('counterEndRow').value=counterEndRow;
+ saveCounterState(); renderCounter();
+ const tab=[...document.querySelectorAll('.tab')].find(b=>b.textContent.trim()==='段数カウンター');
+ showTool('counterTool',tab);
+}
+function setSlopeCounter(key,label,startInputId,totalRows,mode='new'){
+ const data=slopeCounterData[key];
+ if(!data||!data.length){alert('先に斜線を計算してください。');return;}
+ const start=getCalcStartRow(startInputId);
+ let events=calcEventsToOddRows(data);
+ if(key==='shoulder'){
+  const selected=document.querySelector('input[name="shoulderSide"]:checked');
+  const side=selected?selected.value:'left';
+  // 元の斜線データは2,4,6...段。右用は偶数段、左用は奇数段。
+  events=side==='right'?data.map(e=>({...e})):calcEventsToOddRows(data);
+  label+='（'+(side==='right'?'右用':'左用')+'）';
+ }
+ applyCalculatedCounter(events,label,start,totalRows,mode);
+}
+function neckEventsForSide(which,side){
+ const rules=neckCounterData[which]||[];
+ const center=neckCounterBindOff[which];
+ const events=[{row:1,text:side==='right'?`中心${center}目残す`:`中心${center}目伏せる`}];
+ // 右：2目以上は偶数段、1目は奇数段。左：すべて奇数段。
+ // 最初の減らし目は伏せ目の翌段以降に配置する。
+ let previous=1;
+ for(const rule of rules){
+  for(let i=0;i<rule.times;i++){
+   let row=previous+(previous===1 && events.length===1 ? 1 : rule.gap);
+   if(side==='right' && rule.amount>=2){if(row%2!==0)row++;}
+   else {if(row%2===0)row++;}
+   events.push({row,text:`${rule.amount}目減らす`});
+   previous=row;
+  }
+ }
+ return events;
+}
+function setNeckCounter(which,startInputId,totalRows,mode='new'){
+ const data=neckCounterData[which]||[];
+ if(!data.length){alert('先に襟ぐりを計算してください。');return;}
+ const sideBox=document.querySelector('input[name="neckSide'+(which==='front'?'Front':'Back')+'"]:checked');
+ const side=sideBox?sideBox.value:'left';
+ const label=(which==='front'?'前身頃':'後ろ身頃')+'の襟ぐり（'+(side==='right'?'右用':'左用')+'）';
+ const start=getCalcStartRow(startInputId);
+ const events=neckEventsForSide(which,side);
+ // 予定が指定の深さに収まらない場合は警告し、操作を黙って消さない。
+ const last=Math.max(...events.map(e=>e.row));
+ if(last>totalRows){alert('減らし目の予定が襟ぐりの深さ（'+totalRows+'段）を超えています。計算値を確認してください。');return;}
+ applyCalculatedCounter(events,label,start,totalRows,mode);
+}
+
+function setCounterStartRow(){
+ const v=+$('counterStartRow').value;
+ counterStartRow=Number.isInteger(v)&&v>0?v:1;
+ $('counterStartRow').value=counterStartRow;
+ if(counterCalcBaseEvents.length){
+  counterEvents=counterCalcBaseEvents.map(e=>({row:e.row+(counterStartRow-1),text:e.text}));
+ }
+ saveCounterState();
+ renderCounter();
+}
+function setCounterEndRow(){
+ const v=+$('counterEndRow').value;
+ counterEndRow=Number.isInteger(v)&&v>0?v:null;
+ $('counterEndRow').value=counterEndRow;
+ saveCounterState();
+ renderCounter();
+}
+// Insert/remove one row immediately AFTER the current row.
+// Completed rows and the current-row instructions stay unchanged.
+function adjustFutureRows(delta){
+ const at=counterRow;
+ if(delta===-1 && counterEndRow!==null && counterEndRow<=at+1){
+  $('counterEditMessage').textContent='終了段が近いため、これ以上削除できません。';return;
+ }
+ // Store a snapshot so an accidental tap can be undone exactly.
+ counterEditUndo.push(JSON.stringify({events:counterEvents,groups:counterCalcGroups,edits:counterRowEdits,end:counterEndRow,base:counterCalcBaseEvents}));
+ if(counterEditUndo.length>15)counterEditUndo.shift();
+ counterEvents=counterEvents.map(e=>({...e,row:e.row>at?Math.max(1,e.row+delta):e.row}));
+ counterCalcGroups=counterCalcGroups.map(g=>({...g,end:g.end>at?Math.max(1,g.end+delta):g.end,start:g.start>at?Math.max(1,g.start+delta):g.start}));
+ counterRowEdits.push({after:at,delta:delta,ruleIds:counterRules.map(r=>r.uid).filter(Boolean)});
+ if(counterEndRow!==null && counterEndRow>at)counterEndRow=Math.max(at+1,counterEndRow+delta);
+ $('counterEndRow').value=counterEndRow;
+ $('counterEditMessage').textContent=(at+1)+'段目以降を1段'+(delta<0?'繰り上げ':'繰り下げ')+'ました。';
+ saveCounterState();renderCounter();
+}
+function undoFutureRowEdit(){
+ if(!counterEditUndo.length)return;
+ const prev=JSON.parse(counterEditUndo.pop());
+ counterEvents=prev.events;counterCalcGroups=prev.groups;counterRowEdits=prev.edits;
+ counterEndRow=prev.end;counterCalcBaseEvents=prev.base;
+ $('counterEndRow').value=counterEndRow;
+ $('counterEditMessage').textContent='直前の段数調整を取り消しました。';
+ saveCounterState();renderCounter();
+}
+function counterStep(n){
+ counterRow=Math.max(0,counterRow+n);
+ saveCounterState();
+ renderCounter();
+ // タップして進んだ段に操作予定があるときだけ、短く1回振動する。
+ // Android等の対応ブラウザのみ動作。非対応端末では何もしない。
+ if(n>0){
+  try{
+   const events=allCounterEvents(Math.max(counterRow+1,500));
+   const hasAction=events.some(x=>x.row===counterRow);
+   if(navigator.vibrate){
+    const manualEnds=counterCalcGroups.length?[]:counterRules.filter(r=>r.kind==='cross'&&Number.isInteger(r.end)).map(r=>r.end);
+    if((counterEndRow && counterRow===counterEndRow)||manualEnds.includes(counterRow)) navigator.vibrate([180,100,180]);
+    else if(hasAction) navigator.vibrate(120);
+   }
+  }catch(e){}
+ }
+}
+function counterReset(){
+ counterRow=0;
+ counterEvents=[];
+ counterCalcGroups=[];
+ counterRules=[];
+ counterLabel='';
+ counterStartRow=1;
+ counterEndRow=null;
+ counterCalcBaseEvents=[];
+ counterRowEdits=[];
+ counterEditUndo=[];
+ if($('counterStartRow')) $('counterStartRow').value='1';
+ if($('counterEndRow')) $('counterEndRow').value='';
+ try{localStorage.removeItem(COUNTER_STORAGE_KEY);}catch(e){}
+ $('counterSource').textContent='必要な編み方を保存できます';
+ $('manualMessage').textContent='';
+ renderCounter();
+}
+
+function deleteCounterRule(index){
+ if(index<0||index>=counterRules.length)return;
+ counterRules.splice(index,1);
+ if(!counterRules.length && !counterEvents.length){
+  counterLabel='';
+  $('counterSource').textContent='必要な編み方を保存できます';
+ }
+ saveCounterState();
+ renderCounter();
+}
+
+function deleteCounterCalcGroup(id){
+ counterEvents=counterEvents.filter(e=>e.groupId!==id);
+ counterCalcGroups=counterCalcGroups.filter(g=>g.id!==id);
+ // After removing a calculation, keep all other calculations and manual rules untouched.
+ counterCalcBaseEvents=[];
+ if(counterCalcGroups.length)counterEndRow=Math.max(...counterCalcGroups.map(g=>g.end||0));
+ else counterEndRow=null;
+ if($('counterEndRow'))$('counterEndRow').value=counterEndRow;
+ counterLabel=counterCalcGroups.map(g=>g.label).join(' ＋ ')||(counterRules.length?'自分で入力した予定':'');
+ if(!counterEvents.length&&!counterRules.length){
+  $('counterSource').textContent='必要な編み方を保存できます';
+ }else{
+  $('counterSource').textContent='登録した予定を使用中です。';
+ }
+ saveCounterState();
+ renderCounter();
+}
+function escapeCounterHtml(v){
+ return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Use a single listener on the list: regenerated buttons remain clickable.
+document.getElementById('counterRulesList').addEventListener('click',function(event){
+ const button=event.target.closest('button[data-delete-kind]');
+ if(!button || !this.contains(button))return;
+ event.preventDefault();
+ event.stopPropagation();
+ if(button.dataset.deleteKind==='calc')deleteCounterCalcGroup(button.dataset.deleteId);
+ else if(button.dataset.deleteKind==='manual')deleteCounterRule(Number(button.dataset.deleteIndex));
+});
+function renderCounter(){
+ const undo=$('counterUndoEdit');if(undo)undo.disabled=!counterEditUndo.length;
+ $('counterNum').textContent=counterRow;
+ const rulesList=$('counterRulesList');
+ const calcRows=counterCalcGroups.map((g,i)=>{
+  const info=g.start&&g.end?'（'+g.start+'〜'+g.end+'段目）':'';
+  return '<div class="rule-row"><span class="rule-text">'+escapeCounterHtml(g.label+info)+'</span><button type="button" class="rule-delete" data-delete-kind="calc" data-delete-id="'+escapeCounterHtml(g.id)+'">削除</button></div>';
+ });
+ const manualRows=counterRules.map((rule,i)=>'<div class="rule-row"><span class="rule-text">'+escapeCounterHtml(ruleSummary(rule))+'</span><button type="button" class="rule-delete" data-delete-kind="manual" data-delete-index="'+i+'">削除</button></div>');
+ rulesList.innerHTML=calcRows.concat(manualRows).join('')||'まだ予定はありません。';
+ // 無期限の交差にも対応できるよう、現在位置より先までその都度予定を作る
+ const horizon=Math.max(counterRow+500,500);
+ const events=allCounterEvents(horizon);
+ const now=events.filter(x=>x.row===counterRow);
+ const nowTexts=now.map(x=>x.text);
+ if((counterEndRow && counterRow===counterEndRow)||(counterCalcGroups.length===0 && counterRules.some(r=>r.kind==='cross'&&r.end===counterRow))) nowTexts.push('ここまで！');
+ $('counterAction').innerHTML=nowTexts.length?nowTexts.join('<br>'):(counterRow===0?'編み始め':'そのまま編む');
+ const next=events.find(x=>x.row>counterRow);
+ const nextEventRow=next?next.row:null;
+ const manualEnds=counterCalcGroups.length?[]:counterRules.filter(r=>r.kind==='cross'&&Number.isInteger(r.end)).map(r=>r.end);
+ const effectiveEnds=[...(counterEndRow?[counterEndRow]:[]),...manualEnds];
+ const nextEndRow=effectiveEnds.filter(n=>n>counterRow).sort((a,b)=>a-b)[0]||null;
+ if(nextEndRow && (!nextEventRow || nextEndRow<nextEventRow)){
+  $('counterNext').innerHTML='次は <b>'+nextEndRow+'段目</b>：ここまで！';
+ }else if(next){
+  const same=events.filter(x=>x.row===next.row);
+  const texts=[...new Set(same.map(x=>x.text))];
+  if(effectiveEnds.includes(next.row)) texts.push('ここまで！');
+  $('counterNext').innerHTML='次は <b>'+next.row+'段目</b>：'+texts.join('・');
+ }else if(nextEndRow){
+  $('counterNext').innerHTML='次は <b>'+nextEndRow+'段目</b>：ここまで！';
+ }else{
+  $('counterNext').innerHTML=(counterEvents.length||counterRules.length)?'このあとの予定はありません。':'予定がなければ、そのままタップして数えられます。';
+ }
+ const planLimit=counterCalcGroups.length && counterEndRow!=null ? counterEndRow : Math.max(counterRow+120,...counterRules.filter(r=>Number.isInteger(r.end)).map(r=>r.end));
+ const visible=events.filter(x=>x.row<=planLimit);
+ const grouped=[];
+ visible.forEach(x=>{
+  let g=grouped.find(y=>y.row===x.row);
+  if(!g){g={row:x.row,texts:[]};grouped.push(g);}
+  if(!g.texts.includes(x.text))g.texts.push(x.text);
+ });
+ for(const endRow of effectiveEnds.filter(n=>n<=planLimit)){
+  let g=grouped.find(y=>y.row===endRow);
+  if(!g){g={row:endRow,texts:[]};grouped.push(g);}
+  if(!g.texts.includes('ここまで！'))g.texts.push('ここまで！');
+ }
+ grouped.sort((a,b)=>a.row-b.row);
+ // 終了段が決まっている予定は最後まで表示する。無期限だけ直近12件に絞る。
+ const finiteEnd=counterCalcGroups.length && counterEndRow!=null
+  ?counterEndRow
+  :(counterRules.length>0 && counterRules.every(r=>r.times!=null || Number.isInteger(r.end))
+    ?Math.max(0,...counterRules.map(r=>r.kind==='cross'?r.end:(r.start+r.gap*(r.times-1))))
+    :null);
+ const shown=grouped.filter(g=>g.row<=counterRow).concat(
+  finiteEnd!==null
+   ?grouped.filter(g=>g.row>counterRow && g.row<=finiteEnd)
+   :grouped.filter(g=>g.row>counterRow).slice(0,12)
+ );
+ if(shown.length){
+  $('counterPlan').innerHTML=shown.map(g=>'<div style="'+(g.row<counterRow?'opacity:.45;':'')+(g.row===counterRow?'font-weight:800;':'')+'">'+g.row+'段目　'+g.texts.join('・')+(g.row===counterRow?'　← 今ここ':'')+'</div>').join('');
+ }else{
+  $('counterPlan').innerHTML='まだ予定はありません。';
+ }
+}
+
+function neckCalc(){
+ const total=+$('nw').value, frows=+$('fd').value, brows=+$('bd').value;
+ if(!Number.isInteger(total)||!Number.isInteger(frows)||!Number.isInteger(brows)||total<1||frows<1||brows<1){
+  $('front').innerHTML='<b>目数・段数は整数で入力してください。</b>';$('back').innerHTML='';return;
+ }
+
+ function parityCenter(total, ratio){
+   const target=total*ratio;
+   let n=Math.round(target);
+   if((total-n)%2!==0){
+     const lo=n-1, hi=n+1;
+     if(lo<1)n=hi;
+     else if(hi>total)n=lo;
+     else n=Math.abs(lo-target)<=Math.abs(hi-target)?lo:hi;
+   }
+   return Math.max(1,Math.min(total,n));
+ }
+
+ // ---------- FRONT ----------
+ // 中央は約50％伏せる。残りを左右同数にする。
+ const fCenter=parityCenter(total,0.5);
+ neckCounterBindOff.front=fCenter;
+ const fSide=(total-fCenter)/2;
+
+ // 減らし目は、深さのおよそ半分を目安に使う。
+ // 形は「2段ごと大きく → 2目 → 1目 → 4段ごと1目」。
+ // ただし必要目数・段数に応じて回数を自動調整する。
+ let best=null;
+ const targetCurve=frows/2;
+
+ for(let big=1;big<=Math.max(1,fSide);big++){
+  for(let mid=0;mid<=Math.min(6,fSide);mid++){
+   for(let one=0;one<=Math.min(8,fSide);one++){
+    for(let four=0;four<=Math.min(8,fSide);four++){
+     if(big + 2*mid + one + four !== fSide) continue;
+     const used=2 + 2*mid + 2*one + 4*four;
+     if(used>frows) continue;
+
+     // 基本形を優先：
+     // 大きい減らし→2目減らし→1目減らし→4段ごと1目。
+     // カーブ段数は全体の半分付近を優先する。
+     let score=Math.abs(used-targetCurve)*8;
+     if(mid===0) score+=8;
+     if(one===0) score+=5;
+     if(frows>=24 && four===0) score+=5;
+     // 最初の大きい減らしは、片側目数の約1/3～2/5を目安。
+     score+=Math.abs(big-fSide*0.38)*1.5;
+     // 2目減らしは2回前後を好む。
+     score+=Math.abs(mid-2)*1.2;
+     // 同条件なら、平ら部分が半分に近いものを優先。
+     const flat=frows-used;
+     score+=Math.abs(flat-targetCurve)*2;
+
+     if(!best || score<best.score) best={big,mid,one,four,used,score};
+    }
+   }
+ }
+ }
+
+ // 万一組めない場合は、2段ごとの減らしだけで収める。
+ if(!best){
+   const big=Math.max(1,fSide);
+   best={big,mid:0,one:0,four:0,used:2,score:0};
+ }
+
+ let frontLines=[];
+ if(best.big>0) frontLines.push(`2段ごとに <b>${best.big}目減らす</b>`);
+ if(best.mid>0) frontLines.push(`2段ごとに <b>2目減らす${best.mid>1?' ×'+best.mid+'回':''}</b>`);
+ if(best.one>0) frontLines.push(`2段ごとに <b>1目減らす${best.one>1?' ×'+best.one+'回':''}</b>`);
+ if(best.four>0) frontLines.push(`4段ごとに <b>1目減らす${best.four>1?' ×'+best.four+'回':''}</b>`);
+
+ // カウンター用に、表示結果と同じ順番で減らし目ルールを保存
+ neckCounterData.front=[];
+ if(best.big>0) neckCounterData.front.push({gap:2,amount:best.big,times:1});
+ if(best.mid>0) neckCounterData.front.push({gap:2,amount:2,times:best.mid});
+ if(best.one>0) neckCounterData.front.push({gap:2,amount:1,times:best.one});
+ if(best.four>0) neckCounterData.front.push({gap:4,amount:1,times:best.four});
+
+ $('front').innerHTML=`<div class="result-title">前身頃</div>
+ <div>襟ぐり幅：<b>${total}目</b>　深さ：<b>${frows}段</b></div>
+ <div class="pattern"><b>${fCenter}目伏せる</b><br>
+ ${frontLines.join('<br>')}<br>
+ 残りは <b>まっすぐ編む</b></div>
+ <div class="neck-side-select" style="margin:12px 0 8px"><span style="font-weight:700;margin-right:10px">カウンター用</span><label style="display:inline-block;margin-right:16px"><input type="radio" name="neckSideFront" value="right"> 右用</label><label style="display:inline-block"><input type="radio" name="neckSideFront" value="left" checked> 左用</label></div>
+ <div class="calc-start-row"><label for="neckStartFront">開始段</label><input id="neckStartFront" type="number" inputmode="numeric" min="1" step="1" value="1" onfocus="this.select()" onclick="this.select()"><span class="unit">段目から</span></div><div class="calc-import-mode" data-mode="new"><button class="selected" onclick="selectCalcImportMode(this,'new')">新しく</button><button onclick="selectCalcImportMode(this,'add')">追加</button></div><button class="counter-link" onclick="setNeckCounter('front','neckStartFront',${frows},getCalcImportMode(this))">この結果をカウンターで編む</button>`;
+
+ // ---------- BACK ----------
+ // 6段以下は従来どおり：約80％を伏せ、基本2回で減らす。
+ // 6段を超える場合は約70％を伏せ、最後の1区間は平らに残し、
+ // 2段ごとの減らし回数を段数から決める。
+ let center, decs=[];
+
+ if(brows<=6){
+   center=parityCenter(total,0.8);
+   const side=(total-center)/2;
+   const maxOpsByRows=Math.max(1,Math.floor((brows-1)/2));
+   const ops=Math.max(1,Math.min(side,2,maxOpsByRows));
+   const q=Math.floor(side/ops), rem=side%ops;
+   for(let i=0;i<ops;i++) decs.push(q+(i<rem?1:0));
+ }else{
+   center=parityCenter(total,0.7);
+   const side=(total-center)/2;
+   const chances=Math.max(1,Math.floor(brows/2)-1); // 最後の2段程度は平
+   const ops=Math.max(1,Math.min(side,chances));
+
+   // side目をops回に、大→小になるよう配分。
+   // 各回最低1目。余りを前方ほど多めに配る。
+   decs=Array(ops).fill(1);
+   let left=side-ops;
+   let i=0;
+   while(left>0){
+     const idx=Math.min(ops-1, Math.floor(i/2));
+     decs[idx]++;
+     left--; i++;
+   }
+   decs.sort((a,b)=>b-a);
+ }
+
+ const groups=[];
+ for(const v of decs){
+   const last=groups[groups.length-1];
+   if(last && last.v===v) last.n++;
+   else groups.push({v,n:1});
+ }
+ const backLines=groups.map(x=>`2段ごとに <b>${x.v}目減らす${x.n>1?' ×'+x.n+'回':''}</b>`).join("<br>");
+
+ neckCounterBindOff.back=center;
+ // 後ろ身頃も計算結果をそのままカウンターへ渡す
+ neckCounterData.back=groups.map(x=>({gap:2,amount:x.v,times:x.n}));
+
+ $('back').innerHTML=`<div class="result-title">後ろ身頃</div>
+ <div>襟ぐり幅：<b>${total}目</b>　深さ：<b>${brows}段</b></div>
+ <div class="pattern"><b>${center}目伏せる</b><br>
+ ${backLines}<br>
+ 残りは <b>まっすぐ編む</b></div>
+ <div class="neck-side-select" style="margin:12px 0 8px"><span style="font-weight:700;margin-right:10px">カウンター用</span><label style="display:inline-block;margin-right:16px"><input type="radio" name="neckSideBack" value="right"> 右用</label><label style="display:inline-block"><input type="radio" name="neckSideBack" value="left" checked> 左用</label></div>
+ <div class="calc-start-row"><label for="neckStartBack">開始段</label><input id="neckStartBack" type="number" inputmode="numeric" min="1" step="1" value="1" onfocus="this.select()" onclick="this.select()"><span class="unit">段目から</span></div><div class="calc-import-mode" data-mode="new"><button class="selected" onclick="selectCalcImportMode(this,'new')">新しく</button><button onclick="selectCalcImportMode(this,'add')">追加</button></div><button class="counter-link" onclick="setNeckCounter('back','neckStartBack',${brows},getCalcImportMode(this))">この結果をカウンターで編む</button>`;
+}
+loadFormState();
+// v24: 斜線の標準表示を肩下がり（18段・28目）へ変更。
+// この版を初めて開いた時だけ旧版の選択状態を移行し、その後は通常どおり保存する。
+try{
+ const migrationKey='bonEpouxSlopeDefaultShoulderV24';
+ if(!localStorage.getItem(migrationKey)){
+   currentSlopePurpose='shoulder';
+   slopeModeValues.shoulder={rows:'18',stitches:'28'};
+   const shoulderRadio=document.querySelector('input[name="slPurpose"][value="shoulder"]');
+   if(shoulderRadio) shoulderRadio.checked=true;
+   $('slRows').value='18'; $('slStitches').value='28';
+   localStorage.setItem(migrationKey,'1');
+   saveFormState();
+ }
+}catch(e){}
+gaugeCalc();
+zougenCalc();
+slopeCalc();
+neckCalc();
+// 保存済みのカウンターがあれば必ず復元。保存がなければ初期状態（0段・予定なし）。
+// 画面移動や再表示では消さず、リセットを押した時だけ保存内容も消す。
+try{ loadCounterState(); }catch(e){}
+renderCounter();
+restoreActiveTool();
+
+// アプリを閉じる・別画面へ移る直前にも念のため保存する。
+window.addEventListener('pagehide', function(){saveCounterState();saveFormState();});
+// カウンターの状態は操作のたびに保存。ページを閉じても同じURLなら続きから再開。
+window.addEventListener('beforeunload', function(){saveCounterState();saveFormState();});
+
+document.addEventListener('visibilitychange', function(){
+ if(document.visibilityState==='hidden'){saveCounterState();saveFormState();}
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  FORM_IDS.forEach(function(id){const el=$(id);if(el){el.addEventListener("input",saveFormState);el.addEventListener("change",saveFormState);}});
+  ['slRows','slStitches'].forEach(function(id){const el=$(id);if(el){const keep=function(){slopeModeValues[currentSlopePurpose]={rows:$('slRows').value,stitches:$('slStitches').value};saveFormState();};el.addEventListener('input',keep);el.addEventListener('change',keep);}});
+  document.querySelectorAll('input[name="slPurpose"]').forEach(function(radio){
+    radio.addEventListener("change", function(){
+      if(!this.checked) return;
+      // 切替前の数値をその用途専用として保存し、切替先の数値を復元する。
+      slopeModeValues[currentSlopePurpose]={rows:$('slRows').value,stitches:$('slStitches').value};
+      currentSlopePurpose=this.value;
+      const sv=slopeModeValues[currentSlopePurpose] || (currentSlopePurpose==='sleeve'?{rows:'50',stitches:'12'}:{rows:'18',stitches:'28'});
+      $('slRows').value=sv.rows; $('slStitches').value=sv.stitches;
+      saveFormState();
+      slopeCalc();
+    });
+  });
+  document.querySelectorAll('input[type="number"]').forEach(function(input){
+    input.addEventListener("focus", function(){
+      setTimeout(() => this.select(), 0);
+    });
+    input.addEventListener("click", function(){
+      this.select();
+    });
+  });
+  // スマホの「次へ／Enter」で次の入力欄へ進む
+  const gap=document.getElementById('manualGap'), stitches=document.getElementById('manualStitches'), times=document.getElementById('manualTimes'), otherRow=document.getElementById('manualOtherRow'), memo=document.getElementById('manualMemo');
+  function nextOnEnter(el, nextFn){
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); nextFn(); } });
+  }
+  nextOnEnter(gap, function(){
+    if(manualKind==='cross'){ gap.blur(); }
+    else if(manualKind==='increase'||manualKind==='decrease'){ stitches.focus(); }
+  });
+  nextOnEnter(stitches, function(){ if(!stitches.disabled) times.focus(); });
+  nextOnEnter(times, function(){ times.blur(); });
+  nextOnEnter(otherRow, function(){ memo.focus(); });
+  nextOnEnter(memo, function(){ memo.blur(); });
+});
+</script>
+
+</body>
+</html>
